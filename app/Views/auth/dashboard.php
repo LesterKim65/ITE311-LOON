@@ -1,4 +1,4 @@
-<?= $this->extend('template') ?>
+<?= $this->extend('template/header') ?>
 
 <?= $this->section('title') ?>
 Dashboard

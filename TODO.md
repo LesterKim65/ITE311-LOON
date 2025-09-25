@@ -1,11 +1,13 @@
-# Task: Fix Dashboard "Whoops!" Error
+- [x] Modify app/Views/template/header.php to conditionally hide Home, About, Contact navigation links when on the dashboard page (/dashboard).
+- [x] Test the dashboard to ensure links are hidden.
+- [x] Test other pages to ensure links are still visible.
 
-## Steps to Complete
+## Add Navigation for Student and Instructor
 
-- [ ] Step 1: Edit `app/Controllers/Auth.php` to fix view path from 'auth/dashboard' to 'dashboard' and add try-catch error handling around database queries to prevent failures if tables/data missing.
-- [ ] Step 2: Run migrations to ensure all tables (users, courses, enrollments, etc.) are created: `php spark migrate`.
-- [ ] Step 3: Run UserSeeder to populate initial user data: `php spark db:seed UserSeeder`.
-- [ ] Step 4: Test the dashboard by logging in and accessing `/dashboard` (create a test user via register if needed). Verify no "Whoops!" error and role-based content displays (even if empty).
-- [ ] Step 5: If queries still fail (e.g., no sample courses/enrollments), add basic seed data for courses/enrollments or create a new seeder.
+- [ ] Update app/Config/Routes.php to add routes for new navigation links: /enrolled-courses (CourseController::enrolled), /courses (CourseController::index), /create-course (CourseController::create), /manage-courses (CourseController::manage), /manage-users (Auth::manageUsers).
 
-After completing all steps, the dashboard should load successfully.
+- [x] Update app/Views/template/header.php to add conditional navigation items for role == 'student': Enrolled Courses (/enrolled-courses), Browse Courses (/courses); for role == 'teacher': Create Course (/create-course) alongside Manage Courses.
+
+- [ ] Test navigation rendering by logging in as student and teacher (suggest running php spark serve if needed).
+
+- [ ] Note: New routes point to non-existent CourseController methods; create stubs or views if required in future steps.
