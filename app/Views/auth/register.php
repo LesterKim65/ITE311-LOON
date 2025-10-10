@@ -67,7 +67,6 @@ Register
                     name="role"
                     class="form-select <?= isset($validation) && $validation->hasError('role') ? 'is-invalid' : '' ?>"
                     required>
-            
                     <option value="student" <?= old('role') === 'student' ? 'selected' : '' ?>>Student</option>
                     <option value="teacher" <?= old('role') === 'teacher' ? 'selected' : '' ?>>Teacher</option>
                     <option value="admin" <?= old('role') === 'admin' ? 'selected' : '' ?>>Admin</option>

@@ -125,8 +125,20 @@ class Auth extends BaseController
 		];
 
 		if ($role == 'student') {
-			$courses = $db->query("SELECT c.id, c.title, c.description FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.user_id = ? AND e.status = 'active'", [$user_id])->getResultArray();
-			$data['courses'] = $courses;
+			// Get enrolled courses
+			$enrolledCourses = $db->query("SELECT c.id, c.title, c.description FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.user_id = ?", [$user_id])->getResultArray();
+			$data['enrolledCourses'] = $enrolledCourses;
+
+			// Get available courses (not enrolled)
+			$enrolledCourseIds = array_column($enrolledCourses, 'id');
+			if (count($enrolledCourseIds) > 0) {
+				$placeholders = implode(',', array_fill(0, count($enrolledCourseIds), '?'));
+				$sql = "SELECT id, title, description FROM courses WHERE id NOT IN ($placeholders)";
+				$availableCourses = $db->query($sql, $enrolledCourseIds)->getResultArray();
+			} else {
+				$availableCourses = $db->query("SELECT id, title, description FROM courses")->getResultArray();
+			}
+			$data['availableCourses'] = $availableCourses;
 		} elseif ($role == 'teacher') {
 			$courses = $db->query("SELECT id, title, description FROM courses WHERE instructor_id = ?", [$user_id])->getResultArray();
 			$data['courses'] = $courses;

@@ -25,13 +25,9 @@ class CreateEnrollmentsTable extends Migration
                 'constraint' => 11,
                 'unsigned'   => true,
             ],
-            'enrolled_at' => [
+            'enrollment_date' => [
                 'type' => 'DATETIME',
                 'null' => false,
-            ],
-            'status' => [
-                'type'       => "ENUM('active','completed','dropped')",
-                'default'    => 'active',
             ],
         ]);
 
