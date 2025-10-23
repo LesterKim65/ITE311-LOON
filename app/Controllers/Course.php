@@ -8,10 +8,6 @@ class Course extends BaseController
 {
     public function enroll()
     {
-        // Disable CSRF for this endpoint to simplify testing
-        $this->config = config('Security');
-        $this->config->csrfProtection = false;
-
         if (!session()->get('isLoggedIn')) {
             return $this->response->setJSON(['success' => false, 'message' => 'Not logged in']);
         }

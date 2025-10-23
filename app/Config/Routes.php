@@ -24,5 +24,18 @@ $routes->get('/logout', 'Auth::logout');
 
 $routes->post('/course/enroll', 'Course::enroll');
 
-// TEMP debug route
+$routes->get('/admin/course/(:num)/upload', 'Materials::upload/$1');
+$routes->post('/admin/course/(:num)/upload', 'Materials::upload/$1');
+$routes->get('/admin/course/(:num)/materials', 'Materials::view/$1');
+$routes->get('/materials/delete/(:num)', 'Materials::delete/$1');
+$routes->delete('/materials/delete/(:num)', 'Materials::delete/$1');
+$routes->get('/materials/download/(:num)', 'Materials::download/$1');
+$routes->get('/materials/course/(:num)/materials', 'Materials::getMaterialsByCourse/$1');
 
+// Debug routes
+$routes->get('/debug/upload', 'Materials::debugUpload');
+$routes->post('/debug/upload', 'Materials::debugUpload');
+$routes->get('/simple-debug', 'Materials::simpleDebug');
+$routes->post('/simple-debug', 'Materials::simpleDebug');
+
+// TEMP debug route

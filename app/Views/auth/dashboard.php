@@ -51,6 +51,41 @@ Dashboard
                 </div>
             </div>
 
+            <!-- Course Materials -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Course Materials</h5>
+                </div>
+                <div class="card-body">
+                    <?php
+                    $materialModel = new \App\Models\MaterialModel();
+                    $hasMaterials = false;
+                    if (isset($enrolledCourses) && !empty($enrolledCourses)):
+                        foreach ($enrolledCourses as $course):
+                            $materials = $materialModel->getMaterialsByCourse($course['id']);
+                            if (!empty($materials)):
+                                $hasMaterials = true;
+                    ?>
+                            <h6 class="mb-3"><?= esc($course['title']) ?> Materials</h6>
+                            <ul class="list-group mb-3">
+                                <?php foreach ($materials as $material): ?>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <?= esc($material['file_name']) ?>
+                                        <a href="<?= site_url('materials/download/' . $material['id']) ?>" class="btn btn-sm btn-primary">Download</a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                    <?php
+                            endif;
+                        endforeach;
+                    endif;
+                    if (!$hasMaterials):
+                    ?>
+                        <p class="text-center text-muted mb-0">No materials available for your enrolled courses.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Available Courses -->
             <div class="card">
                 <div class="card-header">
@@ -159,38 +194,90 @@ Dashboard
                 });
             </script>
 
-        <?php elseif ($role == 'teacher'): ?>
-            <div class="card">
-                <div class="card-header">
-                    <h5>Your Taught Courses</h5>
+        <?php elseif ($role == 'teacher' || (isset($courses) && !empty($courses))): ?>
+            <!-- Course Management -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your Taught Courses</h5>
+                    <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
+                        <i class="fas fa-plus"></i> Create Course
+                    </a>
                 </div>
                 <div class="card-body">
                     <?php if (isset($courses) && !empty($courses)): ?>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Title</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($courses as $course): ?>
-                                        <tr>
-                                            <td><?= esc($course['id']) ?></td>
-                                            <td><?= esc($course['title']) ?></td>
-                                            <td><?= esc($course['description']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                        <div class="row">
+                            <?php foreach ($courses as $course): ?>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <a href="#" class="text-decoration-none course-title" data-course-id="<?= esc($course['id']) ?>">
+                                                    <?= esc($course['title']) ?>
+                                                </a>
+                                            </h6>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <?php if ($role == 'teacher'): ?>
+                                                    <li>
+                                                        <a class="dropdown-item" href="<?= site_url('admin/course/' . $course['id'] . '/upload') ?>">
+                                                            <i class="fas fa-upload"></i> Upload Material
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <?php endif; ?>
+                                                    <li>
+                                                        <a class="dropdown-item" href="<?= site_url('admin/course/' . $course['id'] . '/materials') ?>">
+                                                            <i class="fas fa-file-alt"></i> View Materials
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#" onclick="deleteCourse(<?= esc($course['id']) ?>)">
+                                                            <i class="fas fa-trash"></i> Delete Course
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text text-muted small">
+                                                <?= esc(substr($course['description'], 0, 100)) ?>
+                                                <?php if (strlen($course['description']) > 100): ?>...<?php endif; ?>
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">Course ID: <?= esc($course['id']) ?></small>
+                                                <span class="badge bg-primary">Active</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p>No courses found.</p>
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No courses found</h5>
+                            <p class="text-muted">Start by creating your first course</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
+                                <i class="fas fa-plus"></i> Create Your First Course
+                            </button>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
+
+
+            <script>
+                function deleteCourse(courseId) {
+                    if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+                        // Implement course deletion
+                        alert('Course deletion feature coming soon!');
+                    }
+                }
+            </script>
 
         <?php elseif ($role == 'admin'): ?>
             <div class="row">

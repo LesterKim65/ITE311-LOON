@@ -8,8 +8,6 @@
  * This is the main entry point for the application.
  */
 
-define('CI_START', microtime(true));
-
 /*
  *---------------------------------------------------------------
  * BOOTSTRAP THE APPLICATION
@@ -21,6 +19,8 @@ define('CI_START', microtime(true));
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../app/Config/Boot/boot.php';
+$paths = require __DIR__ . '/../app/Config/Paths.php';
+
+$app = new \CodeIgniter\CodeIgniter($paths);
 
 $app->run();

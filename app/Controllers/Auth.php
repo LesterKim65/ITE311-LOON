@@ -96,12 +96,24 @@ class Auth extends BaseController
 					'role'       => $user['role'],
 					'isLoggedIn' => true
 				];
-				session()->set($sessionData);
+
+				// Set session data
+				foreach ($sessionData as $key => $value) {
+					session()->set($key, $value);
+				}
+
+				log_message('info', 'Login successful for user: {email}', ['email' => $user['email']]);
+				log_message('info', 'Session data set: {data}', ['data' => json_encode($sessionData)]);
+
+				// Test if session is working
+				$testSession = session()->get('isLoggedIn');
+				log_message('info', 'Session test - isLoggedIn: {value}', ['value' => $testSession]);
 
 				return redirect()->to(site_url('dashboard'))
 					->with('success', 'Welcome back, ' . $user['name'] . '!');
 			}
 
+			log_message('warning', 'Login failed for email: {email}', ['email' => $this->request->getPost('email')]);
 			return view('auth/login', ['error' => 'Invalid login credentials.']);
 		}
 
@@ -139,9 +151,14 @@ class Auth extends BaseController
 				$availableCourses = $db->query("SELECT id, title, description FROM courses")->getResultArray();
 			}
 			$data['availableCourses'] = $availableCourses;
-		} elseif ($role == 'teacher') {
-			$courses = $db->query("SELECT id, title, description FROM courses WHERE instructor_id = ?", [$user_id])->getResultArray();
-			$data['courses'] = $courses;
+		} elseif ($role == 'teacher' || $role == '') {
+			// Handle case where role might be empty but user is a teacher based on courses
+			$teacherCourses = $db->query("SELECT id, title, description FROM courses WHERE instructor_id = ?", [$user_id])->getResultArray();
+			if (!empty($teacherCourses)) {
+				// User has courses assigned as instructor, treat as teacher
+				$data['courses'] = $teacherCourses;
+				$data['role'] = 'teacher'; // Override role for display
+			}
 		} elseif ($role == 'admin') {
 			$users = $db->query("SELECT id, name, email, role FROM users")->getResultArray();
 			$courses = $db->query("SELECT id, title, description, instructor_id FROM courses")->getResultArray();
@@ -162,5 +179,3 @@ class Auth extends BaseController
 	// TEMP: Debug helper to verify DB insert works without the form/CSRF
 
 }
-
-

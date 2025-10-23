@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateEnrollmentsTable extends Migration
+class CreateMaterialsTable extends Migration
 {
     public function up()
     {
@@ -15,35 +15,38 @@ class CreateEnrollmentsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-            ],
             'course_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
             ],
-            'enrolled_at' => [
+            'file_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+            ],
+            'file_path' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+            ],
+            'instructor_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+            ],
+            'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
-            ],
-            'status' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 50,
-                'default'    => 'active',
             ],
         ]);
 
         $this->forge->addKey('id', true); // Primary Key
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('course_id', 'courses', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('enrollments');
+        $this->forge->addForeignKey('course_id', 'courses', 'id', 'CASCADE', 'CASCADE'); // FK to courses table
+        $this->forge->addForeignKey('instructor_id', 'users', 'id', 'CASCADE', 'CASCADE'); // FK to users table
+        $this->forge->createTable('materials');
     }
 
     public function down()
     {
-        $this->forge->dropTable('enrollments');
+        $this->forge->dropTable('materials');
     }
 }
