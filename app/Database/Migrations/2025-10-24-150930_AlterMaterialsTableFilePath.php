@@ -8,11 +8,13 @@ class AlterMaterialsTableFilePath extends Migration
 {
     public function up()
     {
-        $this->forge->modifyColumn('materials', [
-            'file_path' => [
-                'type' => 'TEXT',
-            ],
-        ]);
+        if ($this->db->fieldExists('file_path', 'materials')) {
+            $this->forge->modifyColumn('materials', [
+                'file_path' => [
+                    'type' => 'TEXT',
+                ],
+            ]);
+        }
     }
 
     public function down()

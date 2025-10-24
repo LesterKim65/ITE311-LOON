@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\NotificationModel;
 
 class Auth extends BaseController   
 {
@@ -29,8 +30,10 @@ class Auth extends BaseController
 					'errors' => $errorString,
 				]);
 				// Return the view directly so errors show without relying on session/flashdata
+				$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
 				return view('auth/register', [
 					'validation' => $this->validator,
+					'unreadCount' => $unreadCount
 				]);
 			}
 
@@ -56,12 +59,15 @@ class Auth extends BaseController
 			}
 
 			// Render login view directly to avoid redirect issues
+			$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
 			return view('auth/login', [
 				'success' => 'Registration successful! Please login.',
+				'unreadCount' => $unreadCount
 			]);
 		}
 
-		return view('auth/register');
+		$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+		return view('auth/register', ['unreadCount' => $unreadCount]);
 	}
 
 	public function login()
@@ -80,8 +86,10 @@ class Auth extends BaseController
 				log_message('warning', 'Auth::login validation failed: {errors}', [
 					'errors' => implode(' ', $this->validator->getErrors()),
 				]);
+				$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
 				return view('auth/login', [
-					'validation' => $this->validator
+					'validation' => $this->validator,
+					'unreadCount' => $unreadCount
 				]);
 			}
 
@@ -114,10 +122,12 @@ class Auth extends BaseController
 			}
 
 			log_message('warning', 'Login failed for email: {email}', ['email' => $this->request->getPost('email')]);
-			return view('auth/login', ['error' => 'Invalid login credentials.']);
+			$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+			return view('auth/login', ['error' => 'Invalid login credentials.', 'unreadCount' => $unreadCount]);
 		}
 
-		return view('auth/login');
+		$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+		return view('auth/login', ['unreadCount' => $unreadCount]);
 	}
 
 	public function dashboard()
@@ -166,6 +176,8 @@ class Auth extends BaseController
 			$data['courses'] = $courses;
 		}
 
+		$unreadCount = (new NotificationModel())->getUnreadCount($user_id);
+		$data['unreadCount'] = $unreadCount;
 		return view('auth/dashboard', $data);
 	}
 

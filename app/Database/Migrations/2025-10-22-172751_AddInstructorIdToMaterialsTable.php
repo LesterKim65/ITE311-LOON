@@ -8,17 +8,19 @@ class AddInstructorIdToMaterialsTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('materials', [
-            'instructor_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-                'after'      => 'file_path',
-            ],
-        ]);
+        if (!$this->db->fieldExists('instructor_id', 'materials')) {
+            $this->forge->addColumn('materials', [
+                'instructor_id' => [
+                    'type'       => 'INT',
+                    'constraint' => 11,
+                    'unsigned'   => true,
+                    'after'      => 'file_path',
+                ],
+            ]);
 
-        // Add foreign key constraint
-        $this->forge->addForeignKey('instructor_id', 'users', 'id', 'CASCADE', 'CASCADE');
+            // Add foreign key constraint
+            $this->forge->addForeignKey('instructor_id', 'users', 'id', 'CASCADE', 'CASCADE');
+        }
     }
 
     public function down()

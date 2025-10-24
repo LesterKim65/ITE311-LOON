@@ -24,7 +24,18 @@ abstract class BaseController extends Controller
 	public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
 	{
 		parent::initController($request, $response, $logger);
+
+		// Load unread notification count for logged-in user
+		try {
+			if (session()->has('id')) {
+				$notificationModel = new \App\Models\NotificationModel();
+				$unreadCount = $notificationModel->getUnreadCount(session('id'));
+				$this->data['unreadCount'] = $unreadCount;
+			} else {
+				$this->data['unreadCount'] = 0;
+			}
+		} catch (\Exception $e) {
+			$this->data['unreadCount'] = 0;
+		}
 	}
 }
-
-

@@ -2,22 +2,25 @@
 
 namespace App\Controllers;
 
+use App\Models\NotificationModel;
+
 class Home extends BaseController
 {
 	public function index()
 	{
-		return view('index');
+		$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+		return view('index', ['unreadCount' => $unreadCount]);
 	}
 
 	public function about()
 	{
-		return view('about');
+		$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+		return view('about', ['unreadCount' => $unreadCount]);
 	}
 
 	public function contact()
 	{
-		return view('contact');
+		$unreadCount = session()->get('isLoggedIn') ? (new NotificationModel())->getUnreadCount(session()->get('id')) : 0;
+		return view('contact', ['unreadCount' => $unreadCount]);
 	}
 }
-
-

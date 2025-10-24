@@ -35,6 +35,17 @@ class Course extends BaseController
         try {
             // Use the model's enrollUser method instead of direct insert
             if ($enrollmentModel->enrollUser($data)) {
+                // Create notification
+                $notificationModel = new \App\Models\NotificationModel();
+                $course = $this->db->table('courses')->where('id', $course_id)->get()->getRow();
+                $courseName = $course ? $course->name : 'Unknown Course';
+                $message = "You have been enrolled in " . $courseName;
+                $notificationModel->insert([
+                    'user_id' => $user_id,
+                    'message' => $message,
+                    'is_read' => 0
+                ]);
+
                 return $this->response->setJSON(['success' => true, 'message' => 'Enrolled successfully']);
             } else {
                 return $this->response->setJSON(['success' => false, 'message' => 'Enrollment failed: ' . implode(', ', $enrollmentModel->errors())]);

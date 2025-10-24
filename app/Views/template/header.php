@@ -59,6 +59,15 @@
 
                 <ul class="navbar-nav">
                     <?php if (session()->get('isLoggedIn')): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                🔔
+                                <span class="badge bg-danger" id="notificationBadge" style="display: <?= $unreadCount > 0 ? 'inline' : 'none' ?>;"><?=$unreadCount?></span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" id="notificationList" aria-labelledby="notificationDropdown">
+                                <!-- Notifications will be populated here -->
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <span class="navbar-text text-white me-3">
                                 Hello, <?= esc(session()->get('name')) ?> (<?= esc(session()->get('role')) ?>)
@@ -85,5 +94,45 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            fetchNotifications();
+            // Fetch notifications every 60 seconds
+            setInterval(fetchNotifications, 60000);
+
+            // Function to fetch notifications
+            function fetchNotifications() {
+                $.get('/notifications', function(data) {
+                    if (data.error) return;
+
+                    var count = data.unreadCount;
+                    var badge = $('#notificationBadge');
+                    if (count > 0) {
+                        badge.text(count).show();
+                    } else {
+                        badge.hide();
+                    }
+
+                    var list = $('#notificationList');
+                    list.empty();
+                    data.notifications.forEach(function(notif) {
+                        var item = $('<li><a class="dropdown-item" href="#">' + notif.message + '</a></li>');
+                        item.find('a').append(' <button class="btn btn-sm btn-primary mark-read" data-id="' + notif.id + '">Mark as Read</button>');
+                        list.append(item);
+                    });
+                });
+            }
+
+            // Mark as read
+            $(document).on('click', '.mark-read', function() {
+                var id = $(this).data('id');
+                $.post('/notifications/mark_read/' + id, function(data) {
+                    if (data.success) {
+                        fetchNotifications();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

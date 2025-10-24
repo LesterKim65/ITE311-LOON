@@ -40,3 +40,7 @@ $routes->get('/simple-debug', 'Materials::simpleDebug');
 $routes->post('/simple-debug', 'Materials::simpleDebug');
 
 // TEMP debug route
+
+// Notification routes
+$routes->get('/notifications', 'Notifications::get');
+$routes->post('/notifications/mark_read/(:num)', 'Notifications::mark_as_read/$1');

@@ -19,7 +19,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$paths = require __DIR__ . '/../app/Config/Paths.php';
+$paths = new \Config\Paths();
 
 $app = new \CodeIgniter\CodeIgniter($paths);
 
