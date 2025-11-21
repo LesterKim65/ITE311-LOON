@@ -37,7 +37,8 @@ class Course extends BaseController
             if ($enrollmentModel->enrollUser($data)) {
                 // Create notification
                 $notificationModel = new \App\Models\NotificationModel();
-                $course = $this->db->table('courses')->where('id', $course_id)->get()->getRow();
+                $db = \Config\Database::connect();
+                $course = $db->table('courses')->where('id', $course_id)->get()->getRow();
                 $courseName = $course ? $course->title : 'Unknown Course';
                 $message = "You have been enrolled in " . $courseName;
                 $notificationModel->insert([
@@ -46,7 +47,16 @@ class Course extends BaseController
                     'is_read' => 0
                 ]);
 
-                return $this->response->setJSON(['success' => true, 'message' => 'Enrolled successfully']);
+                // Return course data for AJAX to update the UI
+                return $this->response->setJSON([
+                    'success' => true, 
+                    'message' => 'Enrolled successfully',
+                    'course' => [
+                        'id' => $course_id,
+                        'title' => $course ? $course->title : 'Unknown Course',
+                        'description' => $course ? $course->description : ''
+                    ]
+                ]);
             } else {
                 return $this->response->setJSON(['success' => false, 'message' => 'Enrollment failed: ' . implode(', ', $enrollmentModel->errors())]);
             }
