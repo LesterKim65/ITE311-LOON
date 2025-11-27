@@ -2,10 +2,43 @@
 
 namespace App\Controllers;
 
+use App\Models\CourseModel;
 use App\Models\EnrollmentModel;
 
 class Course extends BaseController
 {
+    public function index()
+    {
+        $courseModel = new CourseModel();
+        $courses = $courseModel->orderBy('title', 'ASC')->findAll();
+
+        return view('courses/index', [
+            'courses' => $courses,
+            'searchTerm' => ''
+        ]);
+    }
+
+    public function search()
+    {
+        $searchTerm = $this->request->getGet('search_term');
+        if ($searchTerm === null) {
+            $searchTerm = $this->request->getPost('search_term');
+        }
+
+        $courseModel = new CourseModel();
+        $courseModel->applySearchFilter($searchTerm)->orderBy('title', 'ASC');
+        $courses = $courseModel->findAll();
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON($courses);
+        }
+
+        return view('courses/index', [
+            'courses' => $courses,
+            'searchTerm' => $searchTerm
+        ]);
+    }
+
     public function enroll()
     {
         if (!session()->get('isLoggedIn')) {
