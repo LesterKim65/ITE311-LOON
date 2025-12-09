@@ -68,6 +68,9 @@ if (session()->get('isLoggedIn')) {
                         </li>
                         <?php if (session()->get('role') == 'student'): ?>
                             <li class="nav-item">
+                                <a class="nav-link" href="<?= base_url('assignments') ?>">Assignments</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="<?= base_url('grades') ?>">Grades</a>
                             </li>
                             <li class="nav-item">

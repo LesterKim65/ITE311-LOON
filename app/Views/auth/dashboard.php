@@ -51,6 +51,86 @@ Dashboard
                 </div>
             </div>
 
+            <!-- Assignments -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Assignments</h5>
+                    <a href="<?= site_url('assignments') ?>" class="btn btn-sm btn-primary">
+                        <i class="fas fa-clipboard-list"></i> View All Assignments
+                    </a>
+                </div>
+                <div class="card-body">
+                    <?php
+                    $assignmentModel = new \App\Models\AssignmentModel();
+                    $assignmentSubmissionModel = new \App\Models\AssignmentSubmissionModel();
+                    $hasAssignments = false;
+                    if (isset($enrolledCourses) && !empty($enrolledCourses)):
+                        foreach ($enrolledCourses as $course):
+                            $assignments = $assignmentModel->getAssignmentsByCourse($course['id']);
+                            if (!empty($assignments)):
+                                $hasAssignments = true;
+                    ?>
+                            <h6 class="mb-3"><?= esc($course['title']) ?> Assignments</h6>
+                            <div class="row mb-3">
+                                <?php foreach (array_slice($assignments, 0, 3) as $assignment): ?>
+                                    <?php
+                                    $submission = $assignmentSubmissionModel->getSubmission($assignment['id'], session()->get('id'));
+                                    $status = $submission ? $submission['status'] : 'not_submitted';
+                                    $dueDate = new \DateTime($assignment['due_date']);
+                                    $now = new \DateTime();
+                                    $isPastDue = $now > $dueDate;
+                                    ?>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card <?= $isPastDue && $status !== 'graded' ? 'border-warning' : '' ?>">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><?= esc($assignment['title']) ?></h6>
+                                                <p class="card-text small text-muted">
+                                                    Due: <?= date('M d, Y', strtotime($assignment['due_date'])) ?>
+                                                </p>
+                                                <div class="mb-2">
+                                                    <?php
+                                                    $badgeClass = 'bg-secondary';
+                                                    if ($status === 'graded') {
+                                                        $badgeClass = 'bg-success';
+                                                    } elseif ($status === 'submitted') {
+                                                        $badgeClass = 'bg-primary';
+                                                    } elseif ($isPastDue) {
+                                                        $badgeClass = 'bg-danger';
+                                                    }
+                                                    ?>
+                                                    <span class="badge <?= $badgeClass ?>">
+                                                        <?= ucfirst(str_replace('_', ' ', $status)) ?>
+                                                    </span>
+                                                </div>
+                                                <?php if ($status === 'graded' && $submission): ?>
+                                                    <p class="mb-2"><strong>Grade:</strong> <?= number_format($submission['score'], 2) ?>%</p>
+                                                <?php endif; ?>
+                                                <a href="<?= site_url('assignments/submit/' . $assignment['id']) ?>" class="btn btn-sm btn-primary">
+                                                    <?= $status === 'not_submitted' ? 'Submit' : 'View' ?>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php if (count($assignments) > 3): ?>
+                                <p class="text-center">
+                                    <a href="<?= site_url('assignments') ?>" class="btn btn-sm btn-outline-primary">
+                                        View All Assignments
+                                    </a>
+                                </p>
+                            <?php endif; ?>
+                    <?php
+                            endif;
+                        endforeach;
+                    endif;
+                    if (!$hasAssignments):
+                    ?>
+                        <p class="text-center text-muted mb-0">No assignments available for your enrolled courses.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Course Materials -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -115,6 +195,81 @@ Dashboard
 
 
         <?php elseif ($role == 'teacher' || (isset($courses) && !empty($courses))): ?>
+            <!-- Assignments Overview -->
+            <?php if (isset($courses) && !empty($courses)): ?>
+                <?php
+                $assignmentModel = new \App\Models\AssignmentModel();
+                $assignmentSubmissionModel = new \App\Models\AssignmentSubmissionModel();
+                $allAssignments = [];
+                $pendingGrading = 0;
+                foreach ($courses as $course) {
+                    $assignments = $assignmentModel->getAssignmentsByCourse($course['id']);
+                    foreach ($assignments as $assignment) {
+                        $assignment['course_title'] = $course['title'];
+                        $assignment['course_id'] = $course['id'];
+                        $allAssignments[] = $assignment;
+                        // Count submissions that need grading
+                        $submissions = $assignmentSubmissionModel->getSubmissionsByAssignment($assignment['id']);
+                        foreach ($submissions as $sub) {
+                            if ($sub['status'] !== 'graded') {
+                                $pendingGrading++;
+                            }
+                        }
+                    }
+                }
+                ?>
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-list"></i> Assignments Overview
+                        </h5>
+                        <?php if ($pendingGrading > 0): ?>
+                            <span class="badge bg-warning"><?= $pendingGrading ?> Pending Grading</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($allAssignments)): ?>
+                            <div class="row">
+                                <?php foreach (array_slice($allAssignments, 0, 6) as $assignment): ?>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-primary">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <a href="<?= site_url('assignments/submissions/' . $assignment['id']) ?>" class="text-decoration-none">
+                                                        <?= esc($assignment['title']) ?>
+                                                    </a>
+                                                </h6>
+                                                <p class="card-text small text-muted mb-2">
+                                                    <strong>Course:</strong> <?= esc($assignment['course_title']) ?>
+                                                </p>
+                                                <p class="card-text small mb-2">
+                                                    <i class="fas fa-calendar"></i> Due: <?= date('M d, Y H:i', strtotime($assignment['due_date'])) ?>
+                                                </p>
+                                                <a href="<?= site_url('assignments/submissions/' . $assignment['id']) ?>" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View Submissions
+                                                </a>
+                                                <a href="<?= site_url('assignments/course/' . $assignment['course_id']) ?>" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-list"></i> All Assignments
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php if (count($allAssignments) > 6): ?>
+                                <div class="text-center mt-3">
+                                    <a href="<?= site_url('dashboard') ?>" class="btn btn-outline-primary">
+                                        View All Assignments
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <p class="text-center text-muted mb-0">No assignments created yet. Create assignments from your courses.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Course Management -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -141,6 +296,11 @@ Dashboard
                                                 </button>
                                                 <ul class="dropdown-menu">
                                                     <?php if ($role == 'teacher'): ?>
+                                                    <li>
+                                                        <a class="dropdown-item" href="<?= site_url('assignments/course/' . $course['id']) ?>">
+                                                            <i class="fas fa-clipboard-list"></i> Assignments
+                                                        </a>
+                                                    </li>
                                                     <li>
                                                         <a class="dropdown-item" href="<?= site_url('admin/course/' . $course['id'] . '/upload') ?>">
                                                             <i class="fas fa-upload"></i> Upload Material
