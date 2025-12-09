@@ -57,3 +57,16 @@ $routes->post('/manage-users/delete', 'ManageUsers::delete');
 $routes->post('/manage-users/restore', 'ManageUsers::restore');
 $routes->post('/manage-users/change-role', 'ManageUsers::changeRole');
 $routes->post('/manage-users/change-password', 'ManageUsers::changePassword');
+
+// Assignment routes
+$routes->get('/assignments', 'Assignments::list');
+$routes->get('/assignments/create/(:num)', 'Assignments::create/$1');
+$routes->post('/assignments/create/(:num)', 'Assignments::create/$1');
+$routes->get('/assignments/course/(:num)', 'Assignments::listByCourse/$1');
+$routes->get('/assignments/submit/(:num)', 'Assignments::submit/$1');
+$routes->post('/assignments/submit/(:num)', 'Assignments::submit/$1');
+$routes->get('/assignments/submissions/(:num)', 'Assignments::viewSubmissions/$1');
+$routes->get('/assignments/grade/(:num)', 'Assignments::grade/$1');
+$routes->post('/assignments/grade/(:num)', 'Assignments::grade/$1');
+$routes->get('/assignments/download-attachment/(:num)', 'Assignments::downloadAttachment/$1');
+$routes->get('/assignments/download-submission/(:num)', 'Assignments::downloadSubmission/$1');
