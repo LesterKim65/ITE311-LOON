@@ -274,9 +274,14 @@ Dashboard
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Your Taught Courses</h5>
-                    <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
-                        <i class="fas fa-plus"></i> Create Course
-                    </a>
+                    <div>
+                        <a href="<?= site_url('manage-students') ?>" class="btn btn-sm btn-success me-2">
+                            <i class="fas fa-users"></i> Manage Students
+                        </a>
+                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
+                            <i class="fas fa-plus"></i> Create Course
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php if (isset($courses) && !empty($courses)): ?>

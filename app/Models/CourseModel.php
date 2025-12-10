@@ -8,7 +8,7 @@ class CourseModel extends Model
 {
     protected $table            = 'courses';
     protected $primaryKey       = 'id';
-    protected $allowedFields    = ['title', 'description', 'instructor_id', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['course_code', 'title', 'description', 'school_year', 'semester', 'schedule', 'instructor_id', 'status', 'start_date', 'end_date', 'created_at', 'updated_at'];
     protected $returnType       = 'array';
     protected $useTimestamps    = true;
 
@@ -19,8 +19,10 @@ class CourseModel extends Model
     {
         if (!empty($term)) {
             $this->groupStart()
-                ->like('title', $term)
-                ->orLike('description', $term)
+                ->like('courses.title', $term)
+                ->orLike('courses.description', $term)
+                ->orLike('courses.course_code', $term)
+                ->orLike('users.name', $term)
                 ->groupEnd();
         }
 

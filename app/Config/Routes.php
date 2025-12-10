@@ -22,6 +22,11 @@ $routes->post('/login', 'Auth::login');
 $routes->get('/dashboard', 'Auth::dashboard');
 $routes->get('/logout', 'Auth::logout');
 
+// Manage Students routes
+$routes->get('/manage-students', 'Auth::manageStudents');
+$routes->post('/update-student-status', 'Auth::updateStudentStatus');
+$routes->post('/remove-student-from-course', 'Auth::removeStudentFromCourse');
+
 $routes->get('/courses', 'Course::index');
 $routes->get('/courses/search', 'Course::search');
 $routes->post('/courses/search', 'Course::search');
@@ -70,3 +75,10 @@ $routes->get('/assignments/grade/(:num)', 'Assignments::grade/$1');
 $routes->post('/assignments/grade/(:num)', 'Assignments::grade/$1');
 $routes->get('/assignments/download-attachment/(:num)', 'Assignments::downloadAttachment/$1');
 $routes->get('/assignments/download-submission/(:num)', 'Assignments::downloadSubmission/$1');
+
+// Admin Course Management routes
+$routes->get('/admin/courses', 'AdminCourse::index');
+$routes->get('/admin/courses/search', 'AdminCourse::search');
+$routes->post('/admin/courses/search', 'AdminCourse::search');
+$routes->post('/admin/courses/update/(:num)', 'AdminCourse::update/$1');
+$routes->get('/admin/courses/get/(:num)', 'AdminCourse::getCourse/$1');

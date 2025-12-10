@@ -185,15 +185,13 @@ class Auth extends BaseController
 				$availableCourses = $db->query("SELECT id, title, description FROM courses")->getResultArray();
 			}
 			$data['availableCourses'] = $availableCourses;
-		} elseif ($role == 'teacher' || $role == '') {
-			// Handle case where role might be empty but user is a teacher based on courses
-			$teacherCourses = $db->query("SELECT id, title, description FROM courses WHERE instructor_id = ?", [$user_id])->getResultArray();
-			if (!empty($teacherCourses)) {
-				// User has courses assigned as instructor, treat as teacher
-				$data['courses'] = $teacherCourses;
-				$data['role'] = 'teacher'; // Override role for display
-			}
-		} elseif ($role == 'admin') {
+        } elseif ($role == 'teacher') {
+            // Get courses where the teacher is the instructor
+            $teacherCourses = $db->query("SELECT id, title, description FROM courses WHERE instructor_id = ?", [$user_id])->getResultArray();
+            if (!empty($teacherCourses)) {
+                $data['courses'] = $teacherCourses;
+            }
+        } elseif ($role == 'admin') {
 			$users = $db->query("SELECT id, name, email, role FROM users")->getResultArray();
 			$courses = $db->query("SELECT id, title, description, instructor_id FROM courses")->getResultArray();
 			$data['users'] = $users;
@@ -205,13 +203,193 @@ class Auth extends BaseController
 		return view('auth/dashboard', $data);
 	}
 
-	public function logout()
-	{
-		session()->destroy();
-		return redirect()->to(site_url('login'))
-			->with('success', 'You have been logged out.');
-	}
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to(site_url('login'))
+            ->with('success', 'You have been logged out.');
+    }
 
-	// TEMP: Debug helper to verify DB insert works without the form/CSRF
+    public function manageStudents()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+
+        $user_id = session()->get('id');
+        $role = session()->get('role');
+
+        // Check if user is a teacher
+        if ($role !== 'teacher') {
+            return redirect()->to('/dashboard')->with('error', 'Access denied.');
+        }
+
+        $db = \Config\Database::connect();
+
+        // Get the course ID from query parameters or use the first course assigned to the teacher
+        $course_id = $this->request->getGet('course_id');
+        $course = null;
+
+        if ($course_id) {
+            // Verify the teacher owns this course
+            $course = $db->query("SELECT * FROM courses WHERE id = ? AND instructor_id = ?", [$course_id, $user_id])->getRowArray();
+            if (!$course) {
+                return redirect()->to('/dashboard')->with('error', 'Course not found or access denied.');
+            }
+        } else {
+            // Get the first course assigned to the teacher
+            $course = $db->query("SELECT * FROM courses WHERE instructor_id = ? LIMIT 1", [$user_id])->getRowArray();
+            if ($course) {
+                $course_id = $course['id'];
+            }
+        }
+
+        // Get search and filter parameters
+        $search = $this->request->getGet('search');
+        $year_level = $this->request->getGet('year_level');
+        $status = $this->request->getGet('status');
+        $program = $this->request->getGet('program');
+
+        // Build the query to get students enrolled in this course
+        $query = "SELECT u.*, e.enrolled_at, e.status as enrollment_status
+                  FROM users u
+                  JOIN enrollments e ON u.id = e.user_id
+                  WHERE e.course_id = ? AND u.role = 'student'";
+
+        $params = [$course_id];
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query .= " AND (u.name LIKE ? OR u.id LIKE ? OR u.email LIKE ?)";
+            $searchParam = "%$search%";
+            $params = array_merge($params, [$searchParam, $searchParam, $searchParam]);
+        }
+
+        // Apply year level filter
+        if (!empty($year_level)) {
+            $query .= " AND u.year_level = ?";
+            $params[] = $year_level;
+        }
+
+        // Apply status filter
+        if (!empty($status)) {
+            $query .= " AND e.status = ?";
+            $params[] = $status;
+        }
+
+        // Apply program filter
+        if (!empty($program)) {
+            $query .= " AND u.program = ?";
+            $params[] = $program;
+        }
+
+        $students = $db->query($query, $params)->getResultArray();
+
+        $data = [
+            'name' => session()->get('name'),
+            'role' => $role,
+            'course' => $course,
+            'students' => $students,
+            'search' => $search,
+            'year_level' => $year_level,
+            'status' => $status,
+            'program' => $program
+        ];
+
+        $unreadCount = (new NotificationModel())->getUnreadCount($user_id);
+        $data['unreadCount'] = $unreadCount;
+
+        return view('auth/manage_students', $data);
+    }
+
+    public function updateStudentStatus()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Not authenticated']);
+        }
+
+        if ($this->request->getMethod() !== 'post') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request method']);
+        }
+
+        $user_id = session()->get('id');
+        $role = session()->get('role');
+
+        // Check if user is a teacher
+        if ($role !== 'teacher') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Access denied']);
+        }
+
+        $student_id = $this->request->getPost('student_id');
+        $course_id = $this->request->getPost('course_id');
+        $new_status = $this->request->getPost('status');
+        $remarks = $this->request->getPost('remarks');
+
+        // Validate required fields
+        if (empty($student_id) || empty($course_id) || empty($new_status)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Missing required fields']);
+        }
+
+        $db = \Config\Database::connect();
+
+        // Verify the teacher owns this course
+        $course = $db->query("SELECT id FROM courses WHERE id = ? AND instructor_id = ?", [$course_id, $user_id])->getRowArray();
+        if (!$course) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Course not found or access denied']);
+        }
+
+        // Verify the student is enrolled in this course
+        $enrollment = $db->query("SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?", [$student_id, $course_id])->getRowArray();
+        if (!$enrollment) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Student not found in this course']);
+        }
+
+        // Update the enrollment status
+        $db->query("UPDATE enrollments SET status = ?, updated_at = NOW() WHERE id = ?", [$new_status, $enrollment['id']]);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Student status updated successfully']);
+    }
+
+    public function removeStudentFromCourse()
+    {
+        if (!session()->get('isLoggedIn')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Not authenticated']);
+        }
+
+        if ($this->request->getMethod() !== 'post') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request method']);
+        }
+
+        $user_id = session()->get('id');
+        $role = session()->get('role');
+
+        // Check if user is a teacher
+        if ($role !== 'teacher') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Access denied']);
+        }
+
+        $student_id = $this->request->getPost('student_id');
+        $course_id = $this->request->getPost('course_id');
+
+        // Validate required fields
+        if (empty($student_id) || empty($course_id)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Missing required fields']);
+        }
+
+        $db = \Config\Database::connect();
+
+        // Verify the teacher owns this course
+        $course = $db->query("SELECT id FROM courses WHERE id = ? AND instructor_id = ?", [$course_id, $user_id])->getRowArray();
+        if (!$course) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Course not found or access denied']);
+        }
+
+        // Delete the enrollment
+        $db->query("DELETE FROM enrollments WHERE user_id = ? AND course_id = ?", [$student_id, $course_id]);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Student removed from course successfully']);
+    }
+
+    // TEMP: Debug helper to verify DB insert works without the form/CSRF
 
 }

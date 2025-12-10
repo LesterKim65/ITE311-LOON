@@ -91,6 +91,9 @@ if (session()->get('isLoggedIn')) {
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= base_url('manage-users') ?>">Manage Users</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= base_url('admin/courses') ?>">Course Management</a>
+                            </li>
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>

@@ -9,7 +9,7 @@ class UserModel extends Model
     protected $table      = 'users';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['name', 'email', 'password', 'role', 'status'];
+    protected $allowedFields = ['name', 'email', 'password', 'role', 'status', 'program', 'year_level', 'section'];
 
     // Enable automatic timestamps if your table has created_at and updated_at columns
     protected $useTimestamps = true;
