@@ -278,9 +278,6 @@ Dashboard
                         <a href="<?= site_url('manage-students') ?>" class="btn btn-sm btn-success me-2">
                             <i class="fas fa-users"></i> Manage Students
                         </a>
-                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
-                            <i class="fas fa-plus"></i> Create Course
-                        </a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -346,9 +343,6 @@ Dashboard
                             <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">No courses found</h5>
                             <p class="text-muted">Start by creating your first course</p>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCourseModal">
-                                <i class="fas fa-plus"></i> Create Your First Course
-                            </button>
                         </div>
                     <?php endif; ?>
                 </div>

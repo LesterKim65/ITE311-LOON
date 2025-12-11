@@ -80,5 +80,9 @@ $routes->get('/assignments/download-submission/(:num)', 'Assignments::downloadSu
 $routes->get('/admin/courses', 'AdminCourse::index');
 $routes->get('/admin/courses/search', 'AdminCourse::search');
 $routes->post('/admin/courses/search', 'AdminCourse::search');
+$routes->post('/admin/courses/create', 'AdminCourse::create');
 $routes->post('/admin/courses/update/(:num)', 'AdminCourse::update/$1');
 $routes->get('/admin/courses/get/(:num)', 'AdminCourse::getCourse/$1');
+
+// Admin Assignment Management routes
+$routes->get('/admin/assignments', 'AdminAssignments::index');

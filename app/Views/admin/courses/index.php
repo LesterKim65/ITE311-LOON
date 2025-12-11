@@ -47,7 +47,7 @@ Admin - Course Management
         </div>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search Bar and Create Button -->
     <div class="row mb-4">
         <div class="col-md-6">
             <form id="searchForm" class="d-flex" method="get" action="<?= base_url('admin/courses/search') ?>">
@@ -65,6 +65,11 @@ Admin - Course Management
                     </button>
                 </div>
             </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-primary" id="createCourseBtn">
+                <i class="fas fa-plus me-1"></i> Create Course
+            </button>
         </div>
     </div>
 
@@ -195,6 +200,78 @@ Admin - Course Management
     </div>
 </div>
 
+<!-- Create Course Modal -->
+<div class="modal fade" id="createCourseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createCourseForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="createCourseCode" class="form-label">Course Code</label>
+                            <input type="text" class="form-control" id="createCourseCode" name="course_code" placeholder="Leave empty to auto-generate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createSchoolYear" class="form-label">School Year</label>
+                            <input type="text" class="form-control" id="createSchoolYear" name="school_year" placeholder="e.g., 2024-2025">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="createSemester" class="form-label">Semester</label>
+                            <select class="form-select" id="createSemester" name="semester">
+                                <option value="1st">1st</option>
+                                <option value="2nd">2nd</option>
+                                <option value="Summer">Summer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createStartDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="createStartDate" name="start_date">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="createEndDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="createEndDate" name="end_date">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createCourseTitle" class="form-label">Course Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="createCourseTitle" name="title" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="createDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="createDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="createTeacher" class="form-label">Teacher <span class="text-danger">*</span></label>
+                            <select class="form-select" id="createTeacher" name="instructor_id" required>
+                                <?php foreach ($teachers as $teacher): ?>
+                                    <option value="<?= $teacher['id'] ?>"><?= esc($teacher['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createSchedule" class="form-label">Schedule</label>
+                            <input type="text" class="form-control" id="createSchedule" name="schedule" placeholder="e.g., Mon-Wed-Fri 9:00 AM">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 $(document).ready(function() {
     // Status dropdown change
@@ -245,6 +322,27 @@ $(document).ready(function() {
         $.post('<?= base_url('admin/courses/update/') ?>' + courseId, formData, function(response) {
             if (response.success) {
                 $('#editCourseModal').modal('hide');
+                location.reload();
+            } else {
+                alert(response.message);
+            }
+        }, 'json');
+    });
+
+    // Create Course button click
+    $('#createCourseBtn').on('click', function() {
+        $('#createCourseForm')[0].reset();
+        $('#createCourseModal').modal('show');
+    });
+
+    // Create form submit
+    $('#createCourseForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+
+        $.post('<?= base_url('admin/courses/create') ?>', formData, function(response) {
+            if (response.success) {
+                $('#createCourseModal').modal('hide');
                 location.reload();
             } else {
                 alert(response.message);

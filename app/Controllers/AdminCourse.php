@@ -83,6 +83,46 @@ class AdminCourse extends BaseController
         return $this->response->setJSON(['success' => true, 'course' => $course]);
     }
 
+    public function create()
+    {
+        $courseModel = new CourseModel();
+        $userModel = new UserModel();
+
+        $data = $this->request->getPost();
+
+        // Basic validation
+        if (empty($data['title']) || empty($data['instructor_id'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Title and instructor are required']);
+        }
+
+        // Generate course code if not provided
+        if (empty($data['course_code'])) {
+            $data['course_code'] = 'COURSE-' . strtoupper(uniqid());
+        }
+
+        // Validate dates if provided
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $startDate = strtotime($data['start_date']);
+            $endDate = strtotime($data['end_date']);
+
+            if ($startDate >= $endDate) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Start date must be before end date']);
+            }
+        }
+
+        // Set default status if not provided
+        if (!isset($data['status'])) {
+            $data['status'] = 'active';
+        }
+
+        // Insert course
+        if ($courseModel->insert($data)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Course created successfully']);
+        } else {
+            return $this->response->setJSON(['success' => false, 'message' => 'Failed to create course']);
+        }
+    }
+
     public function update($id)
     {
         $courseModel = new CourseModel();

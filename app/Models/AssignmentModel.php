@@ -64,6 +64,16 @@ class AssignmentModel extends Model
                     ->orderBy('assignments.created_at', 'DESC')
                     ->findAll();
     }
+
+    /**
+     * Get all assignments with course and teacher details for admin view
+     */
+    public function getAllAssignmentsWithDetails()
+    {
+        return $this->select('assignments.*, courses.title as course_title, users.name as teacher_name')
+                    ->join('courses', 'assignments.course_id = courses.id')
+                    ->join('users', 'assignments.created_by = users.id')
+                    ->orderBy('assignments.created_at', 'DESC')
+                    ->findAll();
+    }
 }
-
-

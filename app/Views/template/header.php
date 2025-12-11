@@ -71,28 +71,19 @@ if (session()->get('isLoggedIn')) {
                                 <a class="nav-link" href="<?= base_url('assignments') ?>">Assignments</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<?= base_url('grades') ?>">Grades</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="<?= base_url('courses') ?>">Courses</a>
                             </li>
                         <?php endif; ?>
-                        <?php if (session()->get('role') == 'teacher'): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= base_url('create-course') ?>">Create Course</a>
-                            </li>
-                        <?php endif; ?>
-                        <?php if (in_array(session()->get('role'), ['teacher', 'admin'])): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= base_url('student-courses') ?>">Student Courses</a>
-                            </li>
-                        <?php endif; ?>
+
                         <?php if (session()->get('role') == 'admin'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= base_url('manage-users') ?>">Manage Users</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= base_url('admin/courses') ?>">Course Management</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= base_url('admin/assignments') ?>">Assignment Management</a>
                             </li>
                         <?php endif; ?>
                     <?php endif; ?>
