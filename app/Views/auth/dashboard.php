@@ -293,6 +293,7 @@ Dashboard
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Your Taught Courses</h5>
+                    <?php if ($role == 'teacher'): ?>
                     <div>
                         <a href="<?= site_url('enrollment-requests') ?>" class="btn btn-sm btn-info me-2">
                             <i class="fas fa-clipboard-check"></i> Enrollment Requests
@@ -301,6 +302,7 @@ Dashboard
                             <i class="fas fa-users"></i> Manage Students
                         </a>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <div class="card-body">
                     <?php if (isset($courses) && !empty($courses)): ?>
