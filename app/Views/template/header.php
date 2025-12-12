@@ -398,48 +398,22 @@ if (session()->get('isLoggedIn')) {
                         console.log('AJAX success:', response);
 
                         if (response.success && response.course) {
-                            // Show success message
-                            showAlert('You have successfully enrolled in ' + escapeHtml(response.course.title) + '!', 'success');
-                            
-                            // Get course card to remove from available courses
+                            // Show success message for enrollment request submitted
+                            showAlert('Your enrollment request for ' + escapeHtml(response.course.title) + ' has been submitted and is pending teacher approval.', 'success');
+
+                            // Update the course card in available courses to show pending status
                             var courseCard = button.closest('.col-md-4');
-                            
-                            // Hide "No enrolled courses" message if it exists
-                            var noCoursesMsg = $('#enrolled-courses-container .col-12');
-                            if (noCoursesMsg.length && noCoursesMsg.find('.text-muted').length) {
-                                noCoursesMsg.remove();
-                            }
+                            var cardTitle = courseCard.find('.card-title');
+                            var cardBody = courseCard.find('.card-body');
 
-                            // Create enrolled course card matching the exact structure from dashboard.php
-                            var enrolledCourseHtml = `
-                                <div class="col-md-4 mb-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="card-title">${escapeHtml(response.course.title)}</h6>
-                                            <p class="card-text">${escapeHtml(response.course.description)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                            // Update the title section with pending badge
+                            cardTitle.removeClass('d-flex justify-content-between align-items-center').addClass('d-flex justify-content-between align-items-center')
+                                    .html(`${escapeHtml(response.course.title)} <span class="badge bg-warning">Pending Approval</span>`);
 
-                            // Add to enrolled courses section with fade-in effect
-                            var $newCard = $(enrolledCourseHtml).hide();
-                            $('#enrolled-courses-container').append($newCard);
-                            $newCard.fadeIn(300);
+                            // Replace the enroll button with pending status button
+                            cardBody.find('.enroll-btn').replaceWith('<button type="button" class="btn btn-warning" disabled>Enrollment Pending</button>');
 
-                            // Remove from available courses with fade effect
-                            courseCard.fadeOut(300, function() {
-                                courseCard.remove();
-                                
-                                // If no more available courses, show message
-                                if ($('#available-courses .row .col-md-4').length === 0) {
-                                    $('#available-courses .row').html('<p>No available courses found.</p>');
-                                }
-                                
-                                console.log('Course card removed from available courses');
-                            });
-
-                            console.log('Course added to enrolled courses successfully');
+                            console.log('Course status updated to pending in available courses');
                         } else {
                             button.prop('disabled', false).text('Enroll');
                             console.error('Enrollment failed:', response.message);

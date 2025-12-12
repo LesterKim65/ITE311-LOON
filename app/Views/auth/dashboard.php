@@ -178,9 +178,28 @@ Dashboard
                                 <div class="col-md-4 mb-3">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h6 class="card-title"><?= esc($course['title']) ?></h6>
+                                            <h6 class="card-title d-flex justify-content-between align-items-center">
+                                                <?= esc($course['title']) ?>
+                                                <?php if (isset($course['enrollment_status'])): ?>
+                                                    <?php if ($course['enrollment_status'] == 'pending'): ?>
+                                                        <span class="badge bg-warning">Pending Approval</span>
+                                                    <?php elseif ($course['enrollment_status'] == 'approved'): ?>
+                                                        <span class="badge bg-success">Approved</span>
+                                                    <?php elseif ($course['enrollment_status'] == 'rejected'): ?>
+                                                        <span class="badge bg-danger">Rejected</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-secondary">Available</span>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+                                            </h6>
                                             <p class="card-text"><?= esc($course['description']) ?></p>
-                                            <button type="button" class="btn btn-primary enroll-btn" data-course-id="<?= esc($course['id']) ?>">Enroll</button>
+                                            <?php if (isset($course['enrollment_status']) && $course['enrollment_status'] == 'pending'): ?>
+                                                <button type="button" class="btn btn-warning" disabled>Enrollment Pending</button>
+                                            <?php elseif (isset($course['enrollment_status']) && $course['enrollment_status'] == 'available'): ?>
+                                                <button type="button" class="btn btn-primary enroll-btn" data-course-id="<?= esc($course['id']) ?>">Enroll</button>
+                                            <?php elseif (isset($course['enrollment_status']) && $course['enrollment_status'] == 'rejected'): ?>
+                                                <button type="button" class="btn btn-danger enroll-btn" data-course-id="<?= esc($course['id']) ?>" title="Try enrolling again">Enroll Again</button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -275,7 +294,10 @@ Dashboard
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Your Taught Courses</h5>
                     <div>
-                        <a href="<?= site_url('manage-students') ?>" class="btn btn-sm btn-success me-2">
+                        <a href="<?= site_url('enrollment-requests') ?>" class="btn btn-sm btn-info me-2">
+                            <i class="fas fa-clipboard-check"></i> Enrollment Requests
+                        </a>
+                        <a href="<?= site_url('manage-students') ?>" class="btn btn-sm btn-success">
                             <i class="fas fa-users"></i> Manage Students
                         </a>
                     </div>

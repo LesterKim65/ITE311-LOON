@@ -27,6 +27,11 @@ $routes->get('/manage-students', 'Auth::manageStudents');
 $routes->post('/update-student-status', 'Auth::updateStudentStatus');
 $routes->post('/remove-student-from-course', 'Auth::removeStudentFromCourse');
 
+// Enrollment Requests routes
+$routes->get('/enrollment-requests', 'Auth::handleEnrollmentRequests');
+$routes->post('/approve-enrollment', 'Auth::approveEnrollment');
+$routes->post('/reject-enrollment', 'Auth::rejectEnrollment');
+
 $routes->get('/courses', 'Course::index');
 $routes->get('/courses/search', 'Course::search');
 $routes->post('/courses/search', 'Course::search');

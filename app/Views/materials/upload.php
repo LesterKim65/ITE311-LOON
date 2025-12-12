@@ -64,7 +64,7 @@ Upload Material
                                 <div class="mb-3">
                                     <label for="material_file" class="form-label">Select File</label>
                                     <input type="file" class="form-control" id="material_file" name="material_file" required>
-                                    <div class="form-text">Allowed file types: PDF, PPT, PPTX, TXT, JPG, PNG, ZIP. Maximum size: 50MB.</div>
+                                    <div class="form-text">Allowed file types: PDF, PPT, PPTX. Maximum size: 50MB.</div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Upload Material</button>
                                 <a href="<?= site_url('dashboard') ?>" class="btn btn-secondary">Back to Dashboard</a>

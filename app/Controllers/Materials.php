@@ -33,13 +33,13 @@ class Materials extends BaseController
 
             if ($file && $file->isValid() && !$file->hasMoved()) {
                 // Validate file type and size
-                $allowedTypes = ['pdf', 'ppt', 'pptx', 'txt', 'jpg', 'png', 'zip'];
+                $allowedTypes = ['pdf', 'ppt', 'pptx'];
                 $maxSize = 50 * 1024 * 1024; // 50MB in bytes
                 $extension = strtolower($file->getClientExtension());
                 $size = $file->getSize();
 
                 if (!in_array($extension, $allowedTypes)) {
-                    $error = 'Invalid file type. Allowed types: PDF, PPT, PPTX, TXT, JPG, PNG, ZIP.';
+                    $error = 'Invalid file type. Allowed types: PDF, PPT, PPTX.';
                 } elseif ($size > $maxSize) {
                     $error = 'File size exceeds 50MB.';
                 } else {

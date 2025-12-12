@@ -36,10 +36,9 @@ Manage Students
                     </div>
                     <div class="col-md-2">
                         <select name="status" class="form-select">
-                            <option value="">Status</option>
+                            <option value="">Enrollment Status</option>
                             <option value="active" <?= (isset($status) && $status == 'active') ? 'selected' : '' ?>>Active</option>
-                            <option value="inactive" <?= (isset($status) && $status == 'inactive') ? 'selected' : '' ?>>Inactive</option>
-                            <option value="dropped" <?= (isset($status) && $status == 'dropped') ? 'selected' : '' ?>>Dropped</option>
+                            <option value="pending" <?= (isset($status) && $status == 'pending') ? 'selected' : '' ?>>Pending Approval</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -70,7 +69,7 @@ Manage Students
                                 <th>Email</th>
                                 <th>Program</th>
                                 <th>Year Level</th>
-                                <th>Status</th>
+                                <th>Enrollment Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -86,7 +85,7 @@ Manage Students
                                         <td>
                                             <span class="badge
                                                 <?= $student['status'] == 'active' ? 'bg-success' :
-                                                   ($student['status'] == 'inactive' ? 'bg-warning' : 'bg-danger') ?>">
+                                                   ($student['status'] == 'pending' ? 'bg-warning' : 'bg-danger') ?>">
                                                 <?= esc(ucfirst($student['status'])) ?>
                                             </span>
                                         </td>
@@ -288,34 +287,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Remove Student button click handler
-    document.querySelectorAll('.remove-student-btn').addEventListener('click', function() {
-        if (confirm('Are you sure you want to remove this student from the course?')) {
-            const studentId = this.getAttribute('data-student-id');
-            const courseId = this.getAttribute('data-course-id');
+    document.querySelectorAll('.remove-student-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove this student from the course?')) {
+                const studentId = this.getAttribute('data-student-id');
+                const courseId = this.getAttribute('data-course-id');
 
-            fetch('<?= site_url('remove-student-from-course') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: `student_id=${studentId}&course_id=${courseId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Student removed from course successfully!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while removing the student.');
-            });
-        }
+                fetch('<?= site_url('remove-student-from-course') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `student_id=${studentId}&course_id=${courseId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Student removed from course successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while removing the student.');
+                });
+            }
+        });
     });
+
+
 });
 </script>
 <?= $this->endSection() ?>

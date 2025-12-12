@@ -68,9 +68,7 @@ class Course extends BaseController
 
         $data = [
             'user_id' => $user_id,
-            'course_id' => $course_id,
-            'enrolled_at' => date('Y-m-d H:i:s'),
-            'status' => 'active'
+            'course_id' => $course_id
         ];
 
         try {
